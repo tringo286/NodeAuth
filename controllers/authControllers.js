@@ -1,5 +1,21 @@
 const User = require('../models/userAuth');
 
+const handleErrors = (error) => {
+    const errors = { email: '', password: '' };     
+
+    if(error.code === 11000) {
+        errors.email = 'Email is already registerd';
+        return errors;
+    }
+
+    if(error.message.includes('user validation failed')) {
+        Object.values(error.errors).forEach( ({properties})  =>{ 
+            errors[properties.path] = properties.message;
+        });
+        return errors;
+    }    
+};
+
 const signup_post = async (req, res) => {
     const user = req.body;
 
@@ -7,8 +23,8 @@ const signup_post = async (req, res) => {
         const newUser = await User.create(user);
         res.status(201).json({ success: true, user: newUser });
     } catch (err) {
-        console.log(err.message);
-        res.status(400).json({ success: false, errors: err});
+        const errors = handleErrors(err);
+        res.status(400).json({ success: false, errors: errors});
     }
 };
 

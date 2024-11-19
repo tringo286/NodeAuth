@@ -21,6 +21,7 @@ app.set('view engine', 'ejs');
 // routes
 app.use(authRoutes);
 app.get('/', (req, res) => res.render('home'));
+app.get('/smoothies', (req, res) => res.render('smoothies'))
 
 app.listen(PORT, () => {
     connectDb();

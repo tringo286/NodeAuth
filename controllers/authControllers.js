@@ -71,4 +71,9 @@ const login_get = (req, res) => {
     res.render('login');
 }
 
-module.exports = { signup_post, login_post, signup_get, login_get };
+const logout_get = (req, res) => {
+    res.cookie('jwt', '', { maxAge: 1 });
+    res.redirect('/');
+}
+
+module.exports = { signup_post, login_post, signup_get, login_get, logout_get };

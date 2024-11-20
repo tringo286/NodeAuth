@@ -1,4 +1,4 @@
-const User = require('../models/userAuth');
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
@@ -14,6 +14,14 @@ const createToken = (id) => {
 const handleErrors = (error) => {
     const errors = { email: '', password: '' };     
 
+    if(error.message === 'incorrect email') {
+        errors.email = "Email is not registerd";
+    }
+
+    if(error.message === 'incorrect password') {
+        errors.password = "Password is incorrect";
+    }
+
     if(error.code === 11000) {
         errors.email = 'Email is already registerd';
         return errors;
@@ -22,9 +30,9 @@ const handleErrors = (error) => {
     if(error.message.includes('user validation failed')) {
         Object.values(error.errors).forEach( ({properties})  =>{ 
             errors[properties.path] = properties.message;
-        });
-        return errors;
+        });        
     }    
+    return errors;
 };
 
 const signup_post = async (req, res) => {
@@ -45,10 +53,13 @@ const login_post = async (req, res) => {
     const { email, password } = req.body;
 
     try {
+        const user = await User.login(email, password);
+        const token = createToken(user._id);
+        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
         res.status(200).json({ success: true, user: email});
     } catch (err) {
-        console.log(err.message);
-        res.status(400).json({ success: false, errors: err});
+        const errors = handleErrors(err); 
+        res.status(400).json({ success: false, errors: errors});
     }
 };
 
